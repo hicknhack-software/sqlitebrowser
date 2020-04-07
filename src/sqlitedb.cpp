@@ -205,6 +205,12 @@ bool DBBrowserDB::open(const QString& db, bool readOnly)
         executeSQL("PRAGMA cipher_plaintext_header_size = " + std::to_string(cipherSettings->getPlaintextHeaderSize()), false, false);
     }
 #endif
+#ifdef ENABLE_SQLEET
+    if(isEncrypted && cipherSettings)
+    {
+        executeSQL("PRAGMA key = " + cipherSettings->getPassword(), false, false);
+    }
+#endif
     delete cipherSettings;
 
     if (_db)
@@ -513,6 +519,24 @@ bool DBBrowserDB::tryEncryptionSettings(const QString& filePath, bool* encrypted
                 sqlite3_exec(dbHandle, ("PRAGMA cipher_kdf_algorithm = " + cipherSettings->getKdfAlgorithm()).c_str(), nullptr, nullptr, nullptr);
             if(cipherSettings->getPlaintextHeaderSize() != enc_default_plaintext_header_size)
                 sqlite3_exec(dbHandle, ("PRAGMA cipher_plaintext_header_size = " + std::to_string(cipherSettings->getPlaintextHeaderSize())).c_str(), nullptr, nullptr, nullptr);
+
+            *encrypted = true;
+#elif defined(ENABLE_SQLEET)
+            CipherDialog *cipherDialog = new CipherDialog(nullptr, false);
+            if(cipherDialog->exec())
+            {
+                delete cipherSettings;
+                cipherSettings = new CipherSettings(cipherDialog->getCipherSettings());
+            } else {
+                sqlite3_close(dbHandle);
+                *encrypted = false;
+                delete cipherSettings;
+                cipherSettings = nullptr;
+                return false;
+            }
+
+            // Set the key
+            sqlite3_exec(dbHandle, ("PRAGMA key = " + cipherSettings->getPassword()).c_str(), nullptr, nullptr, nullptr);
 
             *encrypted = true;
 #else

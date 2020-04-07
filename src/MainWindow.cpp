@@ -462,8 +462,10 @@ void MainWindow::init()
     reloadSettings();
 
 #ifndef ENABLE_SQLCIPHER
+#ifndef ENABLE_SQLEET
     // Only show encryption menu action when SQLCipher support is enabled
     ui->actionEncryption->setVisible(false);
+#endif
 #endif
 
     /* Remove all the '&' signs from the dock titles. On at least Windows and
