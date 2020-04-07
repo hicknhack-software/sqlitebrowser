@@ -9,6 +9,8 @@
 #else
     #include <sqlcipher/sqlite3.h>
 #endif
+#elif defined(ENABLE_SQLEET)
+    #include <sqleet.h>
 #else
     #include <sqlite3.h>
 #endif

@@ -8,6 +8,8 @@ CONFIG += debug_and_release
 CONFIG += qt
 CONFIG += warn_on
 
+CONFIG += sqleet
+
 QMAKE_CXXFLAGS += -std=c++11
 
 # create a unittest option
@@ -196,12 +198,20 @@ CONFIG(sqlcipher) {
         LIBS += -L/usr/local/opt/sqlcipher/lib
     }
 } else {
-    LIBS += -lsqlite3
 
-    # Add the paths for Homebrew installed SQLite
-    macx {
-        INCLUDEPATH += /usr/local/opt/sqlite/include
-        LIBS += -L/usr/local/opt/sqlite/lib
+    CONFIG(sqleet) {
+        QMAKE_CXXFLAGS += -DENABLE_SQLEET
+        INCLUDEPATH += $$PWD/../libs/sqleet
+        LIBPATH_SQLEET=$$OUT_PWD/../libs/
+        LIBS += -L$$LIBPATH_SQLEET -lsqleet
+    } else {
+        LIBS += -lsqlite3
+
+        # Add the paths for Homebrew installed SQLite
+        macx {
+            INCLUDEPATH += /usr/local/opt/sqlite/include
+            LIBS += -L/usr/local/opt/sqlite/lib
+        }
     }
 }
 
